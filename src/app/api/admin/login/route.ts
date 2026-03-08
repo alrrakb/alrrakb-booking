@@ -25,7 +25,7 @@ export async function POST(request: Request) {
             { success: false, error: "بيانات الدخول غير صحيحة" },
             { status: 401 }
         );
-    } catch (error) {
+    } catch {
         return NextResponse.json(
             { success: false, error: "حدث خطأ في الخادم" },
             { status: 500 }
