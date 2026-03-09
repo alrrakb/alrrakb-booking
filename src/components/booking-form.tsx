@@ -32,7 +32,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { submitBooking } from "@/app/actions";
+import { submitBooking, getBookingOptions } from "@/app/actions";
 import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
@@ -62,14 +62,30 @@ const formSchema = z.object({
     }),
 });
 
+interface BookingOption {
+    id: string;
+    type: 'hotel' | 'rooms_count' | 'view_type' | 'meals';
+    label: string;
+    order_index: number;
+}
+
 export default function BookingForm() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [statusModal, setStatusModal] = useState<{ show: boolean, success: boolean, message: string } | null>(null);
     const [lastBookingData, setLastBookingData] = useState<z.infer<typeof formSchema> | null>(null);
     const [mounted, setMounted] = useState(false);
 
+    const [options, setOptions] = useState<BookingOption[]>([]);
+    const [isLoadingOptions, setIsLoadingOptions] = useState(true);
+
     useEffect(() => {
         setMounted(true);
+        const fetchOptions = async () => {
+            const data = await getBookingOptions();
+            setOptions(data as BookingOption[]);
+            setIsLoadingOptions(false);
+        };
+        fetchOptions();
     }, []);
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -134,16 +150,16 @@ export default function BookingForm() {
                                     <Select key={field.name} onValueChange={field.onChange} defaultValue={field.value || ""} value={field.value || ""}>
                                         <FormControl>
                                             <SelectTrigger className="bg-white/[0.05] border-white/30 text-white focus:ring-[#8b4fb8] w-full [&>span]:whitespace-normal [&>span]:text-right [&>span]:break-words min-h-[2.5rem] h-auto py-2">
-                                                <SelectValue placeholder="اختر الفندق" />
+                                                <SelectValue placeholder={isLoadingOptions ? "جاري التحميل..." : "اختر الفندق"} />
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent className="bg-slate-900/90 backdrop-blur-xl border-white/20 text-white min-w-[200px]">
-                                            <SelectItem value="فندق أبراج مكة">فندق أبراج مكة</SelectItem>
-                                            <SelectItem value="فندق سويس أوتيل">فندق سويس أوتيل</SelectItem>
-                                            <SelectItem value="فندق المروة ريحان">فندق المروة ريحان</SelectItem>
-                                            <SelectItem value="فندق موفنبيك هاجر">فندق موفنبيك هاجر</SelectItem>
-                                            <SelectItem value="فندق فيرمونت">فندق فيرمونت</SelectItem>
-                                            <SelectItem value="فندق رويال دار الإيمان (المدينة)">فندق رويال دار الإيمان (المدينة)</SelectItem>
+                                            {options.filter(o => o.type === 'hotel').map((opt) => (
+                                                <SelectItem key={opt.id} value={opt.label}>{opt.label}</SelectItem>
+                                            ))}
+                                            {!isLoadingOptions && options.filter(o => o.type === 'hotel').length === 0 && (
+                                                <div className="p-2 text-xs text-center text-white/40 italic">لا توجد خيارات متاحة</div>
+                                            )}
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
@@ -161,15 +177,13 @@ export default function BookingForm() {
                                     <Select key={field.name} onValueChange={field.onChange} defaultValue={field.value || ""} value={field.value || ""}>
                                         <FormControl>
                                             <SelectTrigger className="bg-white/[0.05] border-white/30 text-white focus:ring-[#8b4fb8] w-full [&>span]:whitespace-normal [&>span]:text-right [&>span]:break-words min-h-[2.5rem] h-auto py-2">
-                                                <SelectValue placeholder="حدد عدد الغرف" />
+                                                <SelectValue placeholder={isLoadingOptions ? "جاري التحميل..." : "حدد عدد الغرف"} />
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent className="bg-slate-900/90 backdrop-blur-xl border-white/20 text-white min-w-[200px]">
-                                            <SelectItem value="1">غرفة واحدة</SelectItem>
-                                            <SelectItem value="2">غرفتين</SelectItem>
-                                            <SelectItem value="3">ثلاث غرف</SelectItem>
-                                            <SelectItem value="4">أربع غرف</SelectItem>
-                                            <SelectItem value="5+">خمس غرف أو أكثر</SelectItem>
+                                            {options.filter(o => o.type === 'rooms_count').map((opt) => (
+                                                <SelectItem key={opt.id} value={opt.label}>{opt.label}</SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
@@ -187,13 +201,13 @@ export default function BookingForm() {
                                     <Select key={field.name} onValueChange={field.onChange} defaultValue={field.value || ""} value={field.value || ""}>
                                         <FormControl>
                                             <SelectTrigger className="bg-white/[0.05] border-white/30 text-white focus:ring-[#8b4fb8] w-full [&>span]:whitespace-normal [&>span]:text-right [&>span]:break-words min-h-[2.5rem] h-auto py-2">
-                                                <SelectValue placeholder="اختر نوع الإطلالة" />
+                                                <SelectValue placeholder={isLoadingOptions ? "جاري التحميل..." : "اختر نوع الإطلالة"} />
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent className="bg-slate-900/90 backdrop-blur-xl border-white/20 text-white min-w-[200px]">
-                                            <SelectItem value="إطلالة على الحرم">إطلالة على الحرم</SelectItem>
-                                            <SelectItem value="إطلالة جزئية على الكعبة">إطلالة جزئية على الكعبة</SelectItem>
-                                            <SelectItem value="إطلالة على المدينة">إطلالة على المدينة</SelectItem>
+                                            {options.filter(o => o.type === 'view_type').map((opt) => (
+                                                <SelectItem key={opt.id} value={opt.label}>{opt.label}</SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
@@ -211,14 +225,13 @@ export default function BookingForm() {
                                     <Select key={field.name} onValueChange={field.onChange} defaultValue={field.value || ""} value={field.value || ""}>
                                         <FormControl>
                                             <SelectTrigger className="bg-white/[0.05] border-white/30 text-white focus:ring-[#8b4fb8] w-full [&>span]:whitespace-normal [&>span]:text-right [&>span]:break-words min-h-[2.5rem] h-auto py-2">
-                                                <SelectValue placeholder="اختر الوجبات" />
+                                                <SelectValue placeholder={isLoadingOptions ? "جاري التحميل..." : "اختر الوجبات"} />
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent className="bg-slate-900/90 backdrop-blur-xl border-white/20 text-white min-w-[200px]">
-                                            <SelectItem value="بدون وجبات">بدون وجبات (إقامة فقط)</SelectItem>
-                                            <SelectItem value="الإفطار">الإفطار</SelectItem>
-                                            <SelectItem value="الإفطار والعشاء">الإفطار والعشاء (نصف إقامة)</SelectItem>
-                                            <SelectItem value="فول بورد">ثلاث وجبات (إقامة كاملة)</SelectItem>
+                                            {options.filter(o => o.type === 'meals').map((opt) => (
+                                                <SelectItem key={opt.id} value={opt.label}>{opt.label}</SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />

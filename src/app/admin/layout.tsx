@@ -2,16 +2,35 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
-import { LogOut, LayoutDashboard } from "lucide-react";
+import { Suspense } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { LogOut, LayoutDashboard, Settings, ExternalLink } from "lucide-react";
 
 export default function AdminLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+            </div>
+        }>
+            <AdminLayoutContent children={children} />
+        </Suspense>
+    );
+}
+
+function AdminLayoutContent({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
     const pathname = usePathname();
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const isSettingsActive = searchParams.get('settings') === 'true';
 
     if (pathname === "/admin/login") {
         return <>{children}</>;
@@ -54,22 +73,11 @@ export default function AdminLayout({
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <Link
-                            href="/admin"
-                            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-sm font-medium ${pathname === "/admin"
-                                ? "bg-white/20 text-white shadow-lg"
-                                : "text-white/60 hover:bg-white/10 hover:text-white"
-                                }`}
-                        >
-                            <LayoutDashboard size={18} />
-                            <span className="hidden sm:inline">الحجوزات</span>
-                        </Link>
-
                         <button
                             onClick={handleLogout}
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 transition-all text-red-400 text-sm font-medium border border-red-500/20"
+                            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 transition-all text-red-400 text-xs sm:text-sm font-medium border border-red-500/20"
                         >
-                            <LogOut size={18} />
+                            <LogOut size={16} className="sm:w-[18px] sm:h-[18px]" />
                             <span className="hidden sm:inline">خروج</span>
                         </button>
                     </div>

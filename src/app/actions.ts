@@ -62,3 +62,112 @@ export async function submitBooking(values: {
 
     return { success: true, data }
 }
+
+export async function getBookingOptions() {
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            cookies: {
+                getAll() {
+                    return cookieStore.getAll()
+                },
+                setAll(cookiesToSet) {
+                    try {
+                        cookiesToSet.forEach(({ name, value, options }) =>
+                            cookieStore.set(name, value, options)
+                        )
+                    } catch {
+                    }
+                },
+            },
+        }
+    )
+
+    const { data, error } = await supabase
+        .from('booking_options')
+        .select('*')
+        .order('order_index', { ascending: true });
+
+    if (error) {
+        console.error("Error fetching booking options:", error)
+        return []
+    }
+
+    return data
+}
+
+import { revalidatePath } from 'next/cache'
+
+export async function addBookingOption(payload: { type: string, label: string, order_index: number }) {
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            cookies: {
+                getAll() { return cookieStore.getAll() },
+                setAll(cookiesToSet) {
+                    try {
+                        cookiesToSet.forEach(({ name, value, options }) =>
+                            cookieStore.set(name, value, options)
+                        )
+                    } catch { }
+                },
+            },
+        }
+    )
+
+    const { error } = await supabase.from('booking_options').insert([payload]);
+    if (!error) revalidatePath('/');
+    return { success: !error, error };
+}
+
+export async function updateBookingOption(id: string, label: string, order_index: number) {
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            cookies: {
+                getAll() { return cookieStore.getAll() },
+                setAll(cookiesToSet) {
+                    try {
+                        cookiesToSet.forEach(({ name, value, options }) =>
+                            cookieStore.set(name, value, options)
+                        )
+                    } catch { }
+                },
+            },
+        }
+    )
+
+    const { error } = await supabase.from('booking_options').update({ label, order_index }).eq('id', id);
+    if (!error) revalidatePath('/');
+    return { success: !error, error };
+}
+
+export async function deleteBookingOption(id: string) {
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            cookies: {
+                getAll() { return cookieStore.getAll() },
+                setAll(cookiesToSet) {
+                    try {
+                        cookiesToSet.forEach(({ name, value, options }) =>
+                            cookieStore.set(name, value, options)
+                        )
+                    } catch { }
+                },
+            },
+        }
+    )
+
+    const { error } = await supabase.from('booking_options').delete().eq('id', id);
+    if (!error) revalidatePath('/');
+    return { success: !error, error };
+}
