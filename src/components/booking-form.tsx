@@ -37,9 +37,9 @@ import { FormField, FormSettings } from "@/actions/form-builder.actions";
 import { cn } from "@/lib/utils";
 
 const generateZodSchema = (fields: FormField[]) => {
-    const schemaObj: any = {};
+    const schemaObj: Record<string, z.ZodTypeAny> = {};
     fields.forEach(f => {
-        let fieldSchema: any = z.any();
+        let fieldSchema: z.ZodTypeAny = z.any();
 
         switch (f.type) {
             case 'text':
@@ -71,7 +71,7 @@ const generateZodSchema = (fields: FormField[]) => {
 };
 
 // Custom Dropdown Component for Multi-Select Field
-function MultiSelectDropdown({ field, formField }: { field: FormField; formField: any }) {
+function MultiSelectDropdown({ field, formField }: { field: FormField; formField: { value: string[]; onChange: (v: string[]) => void } }) {
     const [open, setOpen] = useState(false);
     const currentValues = formField.value || [];
     const maxReached = field.max_selections ? currentValues.length >= field.max_selections : false;
@@ -146,7 +146,7 @@ function MultiSelectDropdown({ field, formField }: { field: FormField; formField
 export default function BookingForm({ fields, settings }: { fields: FormField[], settings: FormSettings | null }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [statusModal, setStatusModal] = useState<{ show: boolean, success: boolean, message: string } | null>(null);
-    const [lastBookingData, setLastBookingData] = useState<any | null>(null);
+    const [lastBookingData, setLastBookingData] = useState<Record<string, unknown> | null>(null);
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -162,7 +162,7 @@ export default function BookingForm({ fields, settings }: { fields: FormField[],
             else if (f.type === 'date') acc[f.id] = undefined;
             else acc[f.id] = "";
             return acc;
-        }, {} as any)
+        }, {} as Record<string, unknown>)
     });
 
     async function onSubmit(values: z.infer<typeof dynamicFormSchema>) {

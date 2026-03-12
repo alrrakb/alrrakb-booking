@@ -1,7 +1,6 @@
 "use server";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client"; // Or a server client for public reads
 import { revalidatePath } from "next/cache";
 
 type ActionResult<T = null> = {

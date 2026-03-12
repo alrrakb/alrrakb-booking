@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle2, XCircle, FileDown, FileUp, Pencil, MessageCircle, Phone, RotateCcw, CalendarCheck, Settings, Plus, Trash2, Save, ExternalLink, Filter } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, FileDown, FileUp, Pencil, Phone, RotateCcw, CalendarCheck, Settings, ExternalLink, Filter } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { FormBuilderModal } from "@/components/admin/form-builder-modal";
@@ -41,7 +41,7 @@ interface Booking {
     check_out: string;
     created_at: string;
     status: 'pending' | 'contacted' | 'confirmed' | 'completed' | 'cancelled';
-    payload?: Record<string, any>;
+    payload?: Record<string, unknown>;
 }
 
 // Arabic month name → month index (0-based) mapping for import parsing
@@ -191,7 +191,7 @@ function AdminDashboardContent() {
         }
 
         // Helper to safely quote a CSV cell (wraps in quotes and escapes internal quotes)
-        const csvCell = (value: any): string => {
+        const csvCell = (value: unknown): string => {
             const str = value === null || value === undefined ? '' : String(value);
             return `"${str.replace(/"/g, '""')}"`;
         };
@@ -209,7 +209,7 @@ function AdminDashboardContent() {
 
         // ── Key helper: safely reads payload[field.id], falls back to a direct DB column ──
         // Handles BOTH new bookings (payload keyed by UUID) and legacy bookings (payload null).
-        const fromPayloadOrColumn = (b: Booking, field: FormField | undefined, fallback: any): any => {
+        const fromPayloadOrColumn = (b: Booking, field: FormField | undefined, fallback: unknown): unknown => {
             if (field) {
                 const payloadVal = b.payload?.[field.id];
                 if (payloadVal !== null && payloadVal !== undefined && payloadVal !== '') return payloadVal;
@@ -493,7 +493,7 @@ function AdminDashboardContent() {
                 }
 
                 // Build payload: smart-match every header to its FormField
-                const payload: Record<string, any> = {};
+                const payload: Record<string, unknown> = {};
                 fileHeaders.forEach((header, i) => {
                     const field = headerToField[header];
                     if (field) payload[field.id] = parts[i] || '';
@@ -528,7 +528,7 @@ function AdminDashboardContent() {
             }
 
             toast.info(`جاري استيراد ${validRows.length} سجل...`);
-            const { error } = await supabase.from('bookings').insert(validRows as any[]);
+            const { error } = await supabase.from('bookings').insert(validRows as Record<string, unknown>[]);
             if (error) {
                 toast.error(`فشل الاستيراد: ${error.message}`);
             } else {

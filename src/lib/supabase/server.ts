@@ -7,7 +7,7 @@ export async function createSupabaseServerClient() {
     let cookieStore;
     try {
         cookieStore = await cookies();
-    } catch (e) {
+    } catch {
         // Mock cookie store for static site generation phase where cookies() throws
         cookieStore = { getAll: () => [], set: () => { }, has: () => false, get: () => undefined };
     }
@@ -37,7 +37,7 @@ export async function createSupabaseAdminClient() {
     let cookieStore;
     try {
         cookieStore = await cookies();
-    } catch (e) {
+    } catch {
         // Mock cookie store for static site generation phase where cookies() throws
         cookieStore = { getAll: () => [], set: () => { }, has: () => false, get: () => undefined };
     }

@@ -1,10 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
 import { Suspense } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { LogOut, LayoutDashboard, Settings, ExternalLink } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { LogOut } from "lucide-react";
 
 export default function AdminLayout({
     children,
@@ -17,7 +16,7 @@ export default function AdminLayout({
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
             </div>
         }>
-            <AdminLayoutContent children={children} />
+            <AdminLayoutContent>{children}</AdminLayoutContent>
         </Suspense>
     );
 }
@@ -29,8 +28,6 @@ function AdminLayoutContent({
 }) {
     const pathname = usePathname();
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const isSettingsActive = searchParams.get('settings') === 'true';
 
     if (pathname === "/admin/login") {
         return <>{children}</>;

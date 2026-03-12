@@ -49,7 +49,7 @@ export default function SocialLinksModal() {
         try {
             const data = await getSocialLinks();
             setLinks(data || []);
-        } catch (err) {
+        } catch {
             toast.error("فشل في تحميل الروابط");
         } finally {
             setIsLoading(false);

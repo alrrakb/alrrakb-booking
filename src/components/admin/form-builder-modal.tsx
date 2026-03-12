@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Settings, XCircle, Plus, Pencil, Trash2, Save, ArrowUp, ArrowDown, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
@@ -20,7 +20,6 @@ import {
     reorderFormFields,
     updateFormSettings,
     FormField,
-    FormSettings,
     FormFieldType
 } from "@/actions/form-builder.actions";
 
@@ -32,7 +31,6 @@ interface FormBuilderModalProps {
 export function FormBuilderModal({ isOpen, onClose }: FormBuilderModalProps) {
     const router = useRouter();
     const [fields, setFields] = useState<FormField[]>([]);
-    const [settings, setSettings] = useState<FormSettings | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     const [isSavingReorder, setIsSavingReorder] = useState(false);
@@ -56,7 +54,7 @@ export function FormBuilderModal({ isOpen, onClose }: FormBuilderModalProps) {
 
     const [submitButtonText, setSubmitButtonText] = useState("احجز الآن");
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         setIsLoading(true);
         const [fetchedFields, fetchedSettings] = await Promise.all([
             getFormFields(),
@@ -64,17 +62,17 @@ export function FormBuilderModal({ isOpen, onClose }: FormBuilderModalProps) {
         ]);
         setFields(fetchedFields);
         if (fetchedSettings) {
-            setSettings(fetchedSettings);
             setSubmitButtonText(fetchedSettings.submit_button_text);
         }
         setIsLoading(false);
-    };
+    }, []);
 
     useEffect(() => {
         if (isOpen) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             fetchData();
         }
-    }, [isOpen]);
+    }, [isOpen, fetchData]);
 
     // Opens the save-settings confirmation dialog
     const handleSaveSettings = () => setShowSaveConfirm(true);

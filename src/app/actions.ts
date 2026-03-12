@@ -3,7 +3,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from 'next/headers'
 
-export async function submitBooking(values: Record<string, any>) {
+export async function submitBooking(values: Record<string, unknown>) {
     const cookieStore = await cookies()
 
     const supabase = createServerClient(
