@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   description: "نسعد باتمام حجزك معنا، فضلاً املأ البيانات التالية لنتمكن من إتمام حجزك في أسرع وقت حسب طلبك",
   icons: {
     icon: "/logo.png",
+    shortcut: "/logo.png",
     apple: "/logo.png",
   },
 };
