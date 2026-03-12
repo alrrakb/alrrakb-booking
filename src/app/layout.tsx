@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cairo, Geist } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
+import { RTLProvider } from "@/components/rtl-provider";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
@@ -31,7 +32,9 @@ export default function RootLayout({
       <body
         className={`antialiased font-cairo bg-slate-50 text-slate-900`}
       >
-        {children}
+        <RTLProvider>
+          {children}
+        </RTLProvider>
         <Toaster position="top-center" richColors />
       </body>
     </html>

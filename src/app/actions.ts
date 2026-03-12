@@ -3,16 +3,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from 'next/headers'
 
-export async function submitBooking(values: {
-    name: string;
-    phone: string;
-    hotel: string;
-    rooms_count: string;
-    view_type: string;
-    meals: string;
-    check_in: Date;
-    check_out: Date;
-}) {
+export async function submitBooking(values: Record<string, any>) {
     const cookieStore = await cookies()
 
     const supabase = createServerClient(
@@ -42,15 +33,18 @@ export async function submitBooking(values: {
         .from('bookings')
         .insert([
             {
-                hotel: values.hotel,
-                rooms_count: values.rooms_count,
-                view_type: values.view_type,
-                meals: values.meals,
-                check_in: values.check_in,
-                check_out: values.check_out,
-                phone: values.phone,
+                // Assign whatever standard keys might still be mapped randomly
+                hotel: values.hotel || null,
+                rooms_count: values.rooms_count || null,
+                view_type: values.view_type || null,
+                meals: values.meals || null,
+                check_in: values.check_in || null,
+                check_out: values.check_out || null,
+                phone: values.phone || null,
                 name: values.name || null,
-                status: 'pending'
+                status: 'pending',
+                // Store the raw dynamic payload as JSONB
+                payload: values,
             },
         ])
         .select()
@@ -120,7 +114,12 @@ export async function addBookingOption(payload: { type: string, label: string, o
     )
 
     const { error } = await supabase.from('booking_options').insert([payload]);
-    if (!error) revalidatePath('/');
+    if (error) {
+        console.error("DB Error (Add Option):", error);
+    } else {
+        revalidatePath('/');
+        revalidatePath('/admin');
+    }
     return { success: !error, error };
 }
 
@@ -144,7 +143,12 @@ export async function updateBookingOption(id: string, label: string, order_index
     )
 
     const { error } = await supabase.from('booking_options').update({ label, order_index }).eq('id', id);
-    if (!error) revalidatePath('/');
+    if (error) {
+        console.error("DB Error (Update Option):", error);
+    } else {
+        revalidatePath('/');
+        revalidatePath('/admin');
+    }
     return { success: !error, error };
 }
 
@@ -168,6 +172,11 @@ export async function deleteBookingOption(id: string) {
     )
 
     const { error } = await supabase.from('booking_options').delete().eq('id', id);
-    if (!error) revalidatePath('/');
+    if (error) {
+        console.error("DB Error (Delete Option):", error);
+    } else {
+        revalidatePath('/');
+        revalidatePath('/admin');
+    }
     return { success: !error, error };
 }

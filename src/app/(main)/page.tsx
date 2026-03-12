@@ -1,9 +1,35 @@
 import BookingForm from "@/components/booking-form";
 import BookingHeader from "@/components/booking-header";
+import { getFormFields, getFormSettings } from "@/actions/form-builder.actions";
+import { getSocialLinks } from "@/actions/social-links.actions";
 
-import { Instagram, Twitter, Facebook } from "lucide-react";
+import { Globe } from "lucide-react";
+import Image from "next/image";
 
-export default function Home() {
+// Helper to map platform name to its uploaded static SVG icon file in the public folder
+const getPlatformConfig = (platformName: string, url: string) => {
+  const name = platformName.toLowerCase();
+  const link = url.toLowerCase();
+
+  const matches = (keyword: string) => name.includes(keyword) || link.includes(keyword);
+
+  if (matches('whatsapp') || matches('wa.me')) return { src: "/whatsapp-svgrepo-com.svg", alt: "WhatsApp" };
+  if (matches('tiktok')) return { src: "/tiktok-fill-svgrepo-com.svg", alt: "TikTok" };
+  if (matches('instagram') || matches('ig')) return { src: "/instagram-svgrepo-com.svg", alt: "Instagram" };
+  if (matches('facebook') || matches('fb.com')) return { src: "/facebook-176-svgrepo-com.svg", alt: "Facebook" };
+  if (matches('twitter') || matches('x.com')) return { src: "/twitter-svgrepo-com.svg", alt: "Twitter / X" };
+  if (matches('youtube') || matches('youtu.be')) return { src: "/youtube-svgrepo-com.svg", alt: "YouTube" };
+  if (matches('linkedin')) return { src: "/linkedin-svgrepo-com.svg", alt: "LinkedIn" };
+  if (matches('snapchat') || matches('snap')) return { src: "/snapchat-svgrepo-com.svg", alt: "Snapchat" };
+
+  return { src: "/globe.svg", alt: "Website" };
+};
+
+export default async function Home() {
+  const fields = await getFormFields();
+  const settings = await getFormSettings();
+  const socialLinks = await getSocialLinks();
+
   return (
     <div className="min-h-screen flex flex-col font-cairo bg-slate-950 relative overflow-x-hidden dark">
       {/* Background Layer — Fixed and behind everything */}
@@ -42,7 +68,7 @@ export default function Home() {
           <div className="absolute bottom-0 left-0 -ml-20 -mt-20 w-64 h-64 rounded-full bg-[#8b4fb8]/10 blur-[80px] pointer-events-none group-hover:bg-[#8b4fb8]/15 transition-colors"></div>
 
           <div className="relative z-10">
-            <BookingForm />
+            <BookingForm fields={fields} settings={settings} />
           </div>
         </div>
 
@@ -59,15 +85,35 @@ export default function Home() {
 
           {/* Social Media Links - Right Side */}
           <div className="flex items-center gap-6 order-2">
-            <a href="#" className="text-white/40 hover:text-[#4db8d4] transition-all hover:scale-110" aria-label="Instagram">
-              <Instagram className="size-6" />
-            </a>
-            <a href="#" className="text-white/40 hover:text-[#4db8d4] transition-all hover:scale-110" aria-label="Twitter">
-              <Twitter className="size-6" />
-            </a>
-            <a href="#" className="text-white/40 hover:text-[#4db8d4] transition-all hover:scale-110" aria-label="Facebook">
-              <Facebook className="size-6" />
-            </a>
+            {socialLinks.map(link => {
+              const { src, alt } = getPlatformConfig(link.platform_name, link.url);
+              // If it's the generic globe and an SVG component isn't used, handle accordingly.
+              // We'll use Next.js Image for all, relying on CSS `invert` because most SVGs are black.
+              // `opacity-60` moving to `opacity-100` on hover for interactivity.
+              return (
+                <a
+                  key={link.id}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="opacity-50 hover:opacity-100 transition-all hover:scale-110"
+                  aria-label={link.platform_name}
+                  title={link.platform_name}
+                >
+                  {src === "/globe.svg" ? (
+                    <Globe className="size-6 text-white" />
+                  ) : (
+                    <Image
+                      src={src}
+                      alt={alt}
+                      width={24}
+                      height={24}
+                      className="invert select-none"
+                    />
+                  )}
+                </a>
+              );
+            })}
           </div>
         </div>
       </footer>
