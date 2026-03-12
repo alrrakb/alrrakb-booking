@@ -39,31 +39,35 @@ import { cn } from "@/lib/utils";
 const generateZodSchema = (fields: FormField[]) => {
     const schemaObj: Record<string, z.ZodTypeAny> = {};
     fields.forEach(f => {
-        let fieldSchema: z.ZodTypeAny = z.any();
-
+        let fieldSchema: z.ZodTypeAny;
         switch (f.type) {
             case 'text':
             case 'phone':
-            case 'select':
-                fieldSchema = z.string({ required_error: `${f.label} مطلوب` });
-                if (f.is_required) fieldSchema = fieldSchema.min(1, `${f.label} مطلوب`);
-                else fieldSchema = fieldSchema.optional().or(z.literal(''));
+            case 'select': {
+                const s = z.string({ required_error: `${f.label} مطلوب` });
+                fieldSchema = f.is_required ? s.min(1, `${f.label} مطلوب`) : s.optional().or(z.literal(''));
                 break;
-            case 'email':
-                if (f.is_required) fieldSchema = z.string().email('بريد إلكتروني غير صالح');
-                else fieldSchema = z.string().email('بريد إلكتروني غير صالح').optional().or(z.literal(''));
+            }
+            case 'email': {
+                const s = z.string().email('بريد إلكتروني غير صالح');
+                fieldSchema = f.is_required ? s : s.optional().or(z.literal(''));
                 break;
-            case 'date':
-                fieldSchema = z.date({ required_error: `${f.label} مطلوب` });
-                if (!f.is_required) fieldSchema = fieldSchema.optional();
+            }
+            case 'date': {
+                const s = z.date({ required_error: `${f.label} مطلوب` });
+                fieldSchema = f.is_required ? s : s.optional();
                 break;
-            case 'multi-select':
-                fieldSchema = z.array(z.string()).min(f.is_required ? 1 : 0, `${f.label} مطلوب`);
+            }
+            case 'multi-select': {
+                let s = z.array(z.string()).min(f.is_required ? 1 : 0, `${f.label} مطلوب`);
                 if (f.max_selections) {
-                    fieldSchema = fieldSchema.max(f.max_selections, `لا يمكن تجاوز ${f.max_selections} اختيارات`);
+                    s = s.max(f.max_selections, `لا يمكن تجاوز ${f.max_selections} اختيارات`);
                 }
-                if (!f.is_required) fieldSchema = fieldSchema.optional();
+                fieldSchema = f.is_required ? s : s.optional();
                 break;
+            }
+            default:
+                fieldSchema = z.any();
         }
         schemaObj[f.id] = fieldSchema;
     });
@@ -344,7 +348,7 @@ export default function BookingForm({ fields, settings }: { fields: FormField[],
 
                                                 return (
                                                     <div key={f.id} className="flex justify-between items-start text-sm border-b border-white/5 pb-2 last:border-0 pt-1 gap-2">
-                                                        <span className="font-bold text-white flex-1 text-left" dir="ltr">{val}</span>
+                                                        <span className="font-bold text-white flex-1 text-left" dir="ltr">{val as React.ReactNode}</span>
                                                         <span className="text-white/40 break-words max-w-[50%]">{f.label}</span>
                                                     </div>
                                                 )
